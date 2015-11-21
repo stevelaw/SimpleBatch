@@ -23,14 +23,6 @@ public abstract class JobStream extends Job {
 		super(name);
 	}
 
-	public JobStream(final String name, final Job dependency) {
-		super(name, dependency);
-	}
-
-	public JobStream(final String name, final List<Job> dependencies) {
-		super(name, dependencies);
-	}
-
 	// ---------------
 	// Public Methods
 	// ---------------

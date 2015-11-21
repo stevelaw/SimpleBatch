@@ -20,15 +20,6 @@ public abstract class Job implements JobClockHandler {
 		this.dependencies = new ArrayList<>();
 	}
 
-	public Job(final String name, final Job dependency) {
-		this.dependencies = new ArrayList<>();
-		this.dependencies.add(dependency);
-	}
-	
-	public Job(final String name, final List<Job> dependencies) {
-		this.dependencies = dependencies;
-	}
-	
 	public void setDependencies(final List<Job> dependencies) {
 		this.dependencies = dependencies;
 	}
@@ -56,21 +47,7 @@ public abstract class Job implements JobClockHandler {
 		}
 	}
 
-	public Boolean isSatisfiedBy(final Date tick) {
-		return true;
-	}
-
-	public Boolean dependenciesSatisfied() {
-		return this.dependencies == null || 
-				this.dependencies.size() == 0 ||
-				this.dependencies.parallelStream().allMatch(job -> job.statusCode.equals(JobStatusCode.SUCCESS));
-	}
-	
-	public Boolean isRunning() {
-		return this.getStatusCode() == JobStatusCode.RUNNING;
-	}
-
-	public void setStatusCode(JobStatusCode statusCode) {
+	protected void setStatusCode(JobStatusCode statusCode) {
 		this.statusCode = statusCode;
 
 		System.out.println("Job " + this + " ended with success? " + (statusCode == JobStatusCode.SUCCESS));
@@ -103,6 +80,20 @@ public abstract class Job implements JobClockHandler {
 		return this.getStatusCode() == JobStatusCode.PENDING || this.getStatusCode() == JobStatusCode.RUNNING;
 	}
 
+	protected Boolean isSatisfiedBy(final Date tick) {
+		return true;
+	}
+
+	protected Boolean dependenciesSatisfied() {
+		return this.dependencies == null || 
+				this.dependencies.size() == 0 ||
+				this.dependencies.parallelStream().allMatch(job -> job.statusCode.equals(JobStatusCode.SUCCESS));
+	}
+	
+	protected Boolean isRunning() {
+		return this.getStatusCode() == JobStatusCode.RUNNING;
+	}
+	
 	@Override
 	public String toString() {
 		return "Job [name=" + name + "]";
