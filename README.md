@@ -4,7 +4,7 @@ Lightweight and simple batch processing framework.
 
 # Usage
 
-The basic usage revolves around a `JobStream` and a `Job`.  A `JobStream` is technically a `Job` itself, but is meant to simplify grouping of jobs and wiring the dependencies between jobs.
+The basic usage revolves around a `JobStream` and a `Job`.  A `JobStream` is an extension a `Job` itself, and is meant to simplify grouping of jobs and wiring the dependencies between jobs.
 
 Both a `JobStream` and `Job` use the [composite pattern](https://en.wikipedia.org/wiki/Composite_pattern) and can therefore be nested as needed.
 
