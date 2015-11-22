@@ -5,14 +5,16 @@ import java.util.logging.Level;
 
 import com.lawson.batch.job.Job;
 import com.lawson.batch.jobstream.JobStream;
+import com.lawson.batch.jobstream.ParallelJobStream;
 import com.lawson.batch.jobstream.SerialJobStream;
 import com.lawson.batch.util.JobStatusCode;
 
 public class Main {
 
 	public static void main(String[] args) {
+//		final JobStream rootJobStream = new SerialJobStream("1", new CronTrigger("0 07 12 * * ?"));
 		final JobStream rootJobStream = new SerialJobStream("1");
-		final JobStreamRunner runnner = new JobStreamRunner(rootJobStream, Level.FINER);
+//		final JobStream rootJobStream = new ParallelJobStream("1");
 
 		final JobStream rootChild1 = new SerialJobStream("2");
 
@@ -62,9 +64,10 @@ public class Main {
 
 		// Add child job streams to root
 		rootJobStream.addJob(rootChild1);
-		rootJobStream.addJob(rootChild2);
+//		rootJobStream.addJob(rootChild2);
 
 		// Start the runner
+		final JobStreamRunner runnner = new JobStreamRunner(rootJobStream, Level.FINE);
 		runnner.start();
 	}
 }

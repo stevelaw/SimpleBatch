@@ -20,8 +20,7 @@ public class CronTrigger implements Trigger {
 	
 	@Override
 	public Boolean isSatisfiedBy(Date tick) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.cronExpression.isSatisfiedBy(tick);
 	}
 
 }

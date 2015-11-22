@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.clock.JobClockHandler;
+import com.lawson.batch.jobstream.JobStream;
 import com.lawson.batch.trigger.DefaultTrigger;
 import com.lawson.batch.trigger.Trigger;
 import com.lawson.batch.util.JobStatusCode;
 import com.lawson.batch.util.Stopwatch;
 
 public abstract class Job implements JobClockHandler {
+	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName()); 
+	
 	private UUID id;
 	private String name;
 	private JobStatusCode statusCode = JobStatusCode.PENDING;
@@ -66,7 +70,7 @@ public abstract class Job implements JobClockHandler {
 		if (this.isAlive() && this.trigger.isSatisfiedBy(tick) && this.dependenciesSatisfied()) {
 			this.preProcess(tick, null);
 
-			System.out.println("Job " + this + " started");
+			LOGGER.info("Job " + this + " started");
 
 			stopwatch = new Stopwatch();
 
@@ -82,7 +86,7 @@ public abstract class Job implements JobClockHandler {
 
 		final double elapsedTime = stopwatch.elapsedTime();
 
-		System.out.println("Job " + this + " ended with status " + statusCode + " in " + elapsedTime + " ms");
+		LOGGER.info("Job " + this + " ended with status " + statusCode + " in " + elapsedTime + " ms");
 
 		if (statusCode == JobStatusCode.SUCCESS || statusCode == JobStatusCode.FAILURE) {
 			JobClock.INSTANCE.unregisterJob(this);

@@ -1,5 +1,6 @@
 package com.lawson.batch;
 
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -7,12 +8,13 @@ import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.jobstream.JobStream;
 
 public class JobStreamRunner {
-	final static Logger logger = Logger.getLogger("jobStreamRunner");
+	private final static Logger LOGGER = Logger.getLogger(JobStreamRunner.class.getName());
 	
 	private JobStream jobStream;
 
 	public JobStreamRunner(JobStream jobStream, Level logLevel) {
-		logger.setLevel(logLevel);
+		LOGGER.setLevel(logLevel);
+		this.addLogHandlers(logLevel);
 		
 		this.jobStream = jobStream;
 		
@@ -25,5 +27,12 @@ public class JobStreamRunner {
 
 	public void start() {
 		JobClock.INSTANCE.start();
+	}
+	
+	private void addLogHandlers(final Level level) {
+		final ConsoleHandler consoleHandler = new ConsoleHandler();
+		consoleHandler.setLevel(level);
+		
+		LOGGER.addHandler(consoleHandler);
 	}
 }

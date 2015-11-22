@@ -1,12 +1,20 @@
 package com.lawson.batch.jobstream;
 
+import java.util.logging.Logger;
+
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.job.Job;
+import com.lawson.batch.trigger.Trigger;
 
 public class SerialJobStream extends JobStream {
+	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());
 	
 	public SerialJobStream(String name) {
 		super(name);
+	}
+	
+	public SerialJobStream(String name, Trigger trigger) {
+		super(name, trigger);
 	}
 
 	public void addJob(final Job job) {
@@ -21,7 +29,7 @@ public class SerialJobStream extends JobStream {
 			job.setDependency(prevJob);
 		}
 		
-		System.out.println("Ading job " + job + " with dependencies " + job.getDependencies());
+		LOGGER.info("Ading job " + job + " with dependencies " + job.getDependencies());
 		
 		this.jobs.add(job);
 

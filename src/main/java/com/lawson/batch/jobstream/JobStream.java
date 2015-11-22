@@ -3,14 +3,17 @@ package com.lawson.batch.jobstream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.lawson.batch.exception.JobException;
 import com.lawson.batch.job.Job;
+import com.lawson.batch.trigger.Trigger;
 import com.lawson.batch.util.JobStatusCode;
 
 public abstract class JobStream extends Job {
-	private final static Logger log = Logger.getLogger("jobStreamRunner.jobStream");
+	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName()); 
 
 	protected List<Job> jobs = new ArrayList<Job>();
 
@@ -20,6 +23,10 @@ public abstract class JobStream extends Job {
 
 	public JobStream(final String name) {
 		super(name);
+	}
+	
+	public JobStream(String name, Trigger trigger) {
+		super(name, trigger);
 	}
 
 	// ---------------
@@ -32,7 +39,7 @@ public abstract class JobStream extends Job {
 			throw new JobException("No jobs added to jobstream");
 		}
 
-		System.out.println("JobStream " + this.getName() + " starting");
+		LOGGER.info("JobStream " + this.getName() + " starting");
 
 		setStatusCode(JobStatusCode.SUCCESS);
 	}
