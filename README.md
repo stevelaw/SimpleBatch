@@ -11,24 +11,28 @@ Both a `JobStream` and `Job` use the [composite pattern](https://en.wikipedia.or
 # Example
 
 ```
-final JobStream rootJobStream = new JobStream("Root");
-final JobStreamRunner runnner = new JobStreamRunner(rootJobStream, Level.FINER);
+final JobStream rootJobStream = new SerialJobStream("Root");
 		
 final JobStream rootChild = new SerialJobStream("RootChildJobStream");
 		
 rootChild.addJob(new Job("Job1") {
 	public void process(JobStreamContext context, Date tick, Object data) {
+		// Do something
+		
 		setStatusCode(JobStatusCode.SUCCESS);
 	}
 });
 
 rootChild.addJob(new Job("Job2") {
 	public void process(JobStreamContext context, Date tick, Object data) {
+		// Do something
+		
 		setStatusCode(JobStatusCode.SUCCESS);
 	}
 });
 
 rootJobStream.addJob(rootChild);
 
+final JobStreamRunner runnner = new JobStreamRunner(rootJobStream, Level.FINER);
 runnner.start();
 ```
