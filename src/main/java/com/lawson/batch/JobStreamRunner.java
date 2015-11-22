@@ -23,7 +23,7 @@ public class JobStreamRunner {
 		return jobStream;
 	}
 
-	public void start(final JobStreamContext context) {
+	public void start() {
 		JobClock.INSTANCE.start();
 	}
 }

@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.lawson.batch.JobStreamContext;
 import com.lawson.batch.exception.JobException;
 import com.lawson.batch.job.Job;
 import com.lawson.batch.util.JobStatusCode;
@@ -28,7 +27,7 @@ public abstract class JobStream extends Job {
 	// ---------------
 
 	@Override
-	public void process(final JobStreamContext context, final Date tick, final Object data) {
+	public void process(final Date tick, final Object data) {
 		if (this.jobs.size() == 0) {
 			throw new JobException("No jobs added to jobstream");
 		}
