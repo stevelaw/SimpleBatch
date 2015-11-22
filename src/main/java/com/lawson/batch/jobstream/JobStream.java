@@ -39,8 +39,6 @@ public abstract class JobStream extends Job {
 			throw new JobException("No jobs added to jobstream");
 		}
 
-		LOGGER.info("JobStream " + this.getName() + " starting");
-
 		setStatusCode(JobStatusCode.SUCCESS);
 	}
 

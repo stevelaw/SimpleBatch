@@ -15,8 +15,8 @@ import com.lawson.batch.util.JobStatusCode;
 import com.lawson.batch.util.Stopwatch;
 
 public abstract class Job implements JobClockHandler {
-	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName()); 
-	
+	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());
+
 	private UUID id;
 	private String name;
 	private JobStatusCode statusCode = JobStatusCode.PENDING;
@@ -36,7 +36,7 @@ public abstract class Job implements JobClockHandler {
 		this.id = UUID.randomUUID();
 		this.name = name;
 		this.dependencies = new ArrayList<>();
-		
+
 		if (trigger == null) {
 			this.trigger = new DefaultTrigger();
 		} else {
@@ -86,9 +86,12 @@ public abstract class Job implements JobClockHandler {
 
 		final double elapsedTime = stopwatch.elapsedTime();
 
-		LOGGER.info("Job " + this + " ended with status " + statusCode + " in " + elapsedTime + " ms");
+		LOGGER.info("Job " + this + " completed with status " + statusCode + " in " + elapsedTime + " ms");
 
-		if (statusCode == JobStatusCode.SUCCESS || statusCode == JobStatusCode.FAILURE) {
+		// If the job is repeatable then re-set the status code to pending.
+		if (this.trigger.isRepeatable()) {
+			this.statusCode = JobStatusCode.PENDING;
+		} else if ((statusCode == JobStatusCode.SUCCESS || statusCode == JobStatusCode.FAILURE)) {
 			JobClock.INSTANCE.unregisterJob(this);
 		}
 	}

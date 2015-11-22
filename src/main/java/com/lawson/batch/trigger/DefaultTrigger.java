@@ -9,4 +9,9 @@ public class DefaultTrigger implements Trigger {
 		return true;
 	}
 
+	@Override
+	public Boolean isRepeatable() {
+		return false;
+	}
+
 }

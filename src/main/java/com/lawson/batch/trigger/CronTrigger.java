@@ -8,19 +8,27 @@ import com.lawson.batch.util.CronExpression;
 
 public class CronTrigger implements Trigger {
 
-	CronExpression cronExpression;
+	final CronExpression cronExpression;
+	final Boolean isRepeatable;
 
-	public CronTrigger(final String cronExpression) {
+	public CronTrigger(final String cronExpression, final Boolean isRepeatable) {
 		try {
 			this.cronExpression = new CronExpression(cronExpression);
 		} catch (ParseException e) {
 			throw new JobException("Error creating cron expression", e);
 		}
+		
+		this.isRepeatable = isRepeatable;
 	}
 	
 	@Override
 	public Boolean isSatisfiedBy(Date tick) {
 		return this.cronExpression.isSatisfiedBy(tick);
+	}
+
+	@Override
+	public Boolean isRepeatable() {
+		return this.isRepeatable;
 	}
 
 }
