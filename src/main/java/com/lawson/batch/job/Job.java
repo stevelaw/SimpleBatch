@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.clock.JobClockHandler;
+import com.lawson.batch.trigger.DefaultTrigger;
+import com.lawson.batch.trigger.Trigger;
 import com.lawson.batch.util.JobStatusCode;
 import com.lawson.batch.util.Stopwatch;
 
@@ -15,6 +17,7 @@ public abstract class Job implements JobClockHandler {
 	private String name;
 	private JobStatusCode statusCode = JobStatusCode.PENDING;
 	private List<Job> dependencies;
+	private Trigger trigger;
 
 	Stopwatch stopwatch;
 
@@ -22,6 +25,19 @@ public abstract class Job implements JobClockHandler {
 		this.id = UUID.randomUUID();
 		this.name = name;
 		this.dependencies = new ArrayList<>();
+		this.trigger = new DefaultTrigger();
+	}
+
+	public Job(final String name, final Trigger trigger) {
+		this.id = UUID.randomUUID();
+		this.name = name;
+		this.dependencies = new ArrayList<>();
+		
+		if (trigger == null) {
+			this.trigger = new DefaultTrigger();
+		} else {
+			this.trigger = trigger;
+		}
 	}
 
 	public void setDependencies(final List<Job> dependencies) {
@@ -47,7 +63,7 @@ public abstract class Job implements JobClockHandler {
 
 	@Override
 	public void onTick(final Date tick) {
-		if (this.isAlive() && this.isSatisfiedBy(tick) && this.dependenciesSatisfied()) {
+		if (this.isAlive() && this.trigger.isSatisfiedBy(tick) && this.dependenciesSatisfied()) {
 			this.preProcess(tick, null);
 
 			System.out.println("Job " + this + " started");
@@ -92,18 +108,6 @@ public abstract class Job implements JobClockHandler {
 	 */
 	protected boolean isAlive() {
 		return this.getStatusCode() == JobStatusCode.PENDING || this.getStatusCode() == JobStatusCode.RUNNING;
-	}
-
-	/**
-	 * The method can be overridden to give the job the opportunity to determine
-	 * if it can run based on the date passed in.
-	 * 
-	 * @param tick
-	 *            Current tick from the master clock.
-	 * @return Returns true by default.
-	 */
-	protected Boolean isSatisfiedBy(final Date tick) {
-		return true;
 	}
 
 	/**
