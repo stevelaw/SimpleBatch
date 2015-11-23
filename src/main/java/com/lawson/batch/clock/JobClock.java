@@ -21,7 +21,7 @@ public enum JobClock {
 	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName()); 
 
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-	private final ScheduledExecutorService dispatchers = Executors.newScheduledThreadPool(10);
+	private ScheduledExecutorService dispatchers;
 
 	private ZoneId zoneId;
 
@@ -29,6 +29,7 @@ public enum JobClock {
 
 	public void configure(final JobStreamRunnerConfig config) {
 		this.zoneId = config.getTimezoneZoneId();
+		this.dispatchers = Executors.newScheduledThreadPool(config.getNumberDispatcherThreads());
 	}
 	
 	public void start() {
