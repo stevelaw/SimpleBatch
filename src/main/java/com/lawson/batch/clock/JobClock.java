@@ -11,6 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import com.lawson.batch.JobStreamRunnerConfig;
 import com.lawson.batch.job.Job;
 import com.lawson.batch.jobstream.JobStream;
 
@@ -22,10 +23,14 @@ public enum JobClock {
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private final ScheduledExecutorService dispatchers = Executors.newScheduledThreadPool(10);
 
-	private static final ZoneId DEFAULT_ZONE_ID = ZoneId.of("America/New_York");
+	private ZoneId zoneId;
 
 	private Set<JobClockHandler> observers = new CopyOnWriteArraySet<>();
 
+	public void configure(final JobStreamRunnerConfig config) {
+		this.zoneId = config.getTimezoneZoneId();
+	}
+	
 	public void start() {
 		this.startTimer();
 	}
@@ -57,7 +62,7 @@ public enum JobClock {
 	private void startTimer() {
 		this.scheduler.scheduleAtFixedRate(new Runnable() {
 			public void run() {
-				final ZonedDateTime zonedNow = ZonedDateTime.now(DEFAULT_ZONE_ID);
+				final ZonedDateTime zonedNow = ZonedDateTime.now(zoneId);
 				final Date tick = Date.from(zonedNow.toInstant());
 
 				postTick(tick);
@@ -66,11 +71,6 @@ public enum JobClock {
 	}
 	
 	private void postTick(final Date tick) {
-		// Not sure if we want to shutdown when no jobs
-		// if(this.jobs.size() == 0) {
-		// this.scheduler.shutdown();
-		// }
-
 		this.observers.parallelStream().forEach(job -> {
 			dispatchers.execute(new Runnable() {
 				@Override

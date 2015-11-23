@@ -1,7 +1,6 @@
 package com.lawson.batch;
 
 import java.util.Date;
-import java.util.logging.Level;
 
 import com.lawson.batch.job.Job;
 import com.lawson.batch.jobstream.JobStream;
@@ -66,7 +65,7 @@ public class Main {
 		rootChild1.addJob(rootChild2);
 
 		// Start the runner
-		final JobStreamRunner runnner = new JobStreamRunner(rootJobStream, Level.FINE);
+		final JobStreamRunner runnner = new JobStreamRunner(rootJobStream);
 		runnner.start();
 	}
 }
