@@ -3,8 +3,6 @@ package com.lawson.batch.jobstream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.lawson.batch.exception.JobException;
@@ -13,7 +11,7 @@ import com.lawson.batch.trigger.Trigger;
 import com.lawson.batch.util.JobStatusCode;
 
 public abstract class JobStream extends Job {
-	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName()); 
+	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());
 
 	protected List<Job> jobs = new ArrayList<Job>();
 
@@ -24,7 +22,7 @@ public abstract class JobStream extends Job {
 	public JobStream(final String name) {
 		super(name);
 	}
-	
+
 	public JobStream(String name, Trigger trigger) {
 		super(name, trigger);
 	}
@@ -48,21 +46,17 @@ public abstract class JobStream extends Job {
 		return jobs;
 	}
 
-	// ----------------
-	// Private Methods
-	// ----------------
-
-	/*
-	 * If all jobs were successful, then job stream is successful, otherwise set
-	 * to failure.
+	/**
+	 * Returns true if all non-repeatable triggered jobs are successful.
+	 * 
+	 * @return True if all non-repeatable triggered jobs are successful.
 	 */
-	private void setCollectiveJobStatus(final List<Job> jobs) {
-		boolean allSuccessful = jobs.stream().allMatch(job -> job.getStatusCode() == JobStatusCode.SUCCESS);
+	public Boolean isAllSuccessful() {
+		return this.jobs.parallelStream().filter(job -> !job.getTrigger().isRepeatable())
+				.allMatch(job -> job.getStatusCode().equals(JobStatusCode.SUCCESS));
+	}
 
-		if (allSuccessful) {
-			setStatusCode(JobStatusCode.SUCCESS);
-		} else {
-			setStatusCode(JobStatusCode.FAILURE);
-		}
+	public void resetAll() {
+		this.jobs.parallelStream().forEach(job -> job.setStatusCode(JobStatusCode.PENDING));
 	}
 }

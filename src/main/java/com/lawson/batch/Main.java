@@ -5,7 +5,6 @@ import java.util.logging.Level;
 
 import com.lawson.batch.job.Job;
 import com.lawson.batch.jobstream.JobStream;
-import com.lawson.batch.jobstream.ParallelJobStream;
 import com.lawson.batch.jobstream.SerialJobStream;
 import com.lawson.batch.util.JobStatusCode;
 
@@ -64,7 +63,7 @@ public class Main {
 
 		// Add child job streams to root
 		rootJobStream.addJob(rootChild1);
-//		rootJobStream.addJob(rootChild2);
+		rootChild1.addJob(rootChild2);
 
 		// Start the runner
 		final JobStreamRunner runnner = new JobStreamRunner(rootJobStream, Level.FINE);

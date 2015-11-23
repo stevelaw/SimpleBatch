@@ -57,6 +57,10 @@ public abstract class Job implements JobClockHandler {
 		return dependencies;
 	}
 
+	public Trigger getTrigger() {
+		return trigger;
+	}
+
 	public void preProcess(final Date tick, final Object data) {
 	}
 
@@ -81,7 +85,7 @@ public abstract class Job implements JobClockHandler {
 		}
 	}
 
-	protected void setStatusCode(JobStatusCode statusCode) {
+	public void setStatusCode(JobStatusCode statusCode) {
 		this.statusCode = statusCode;
 
 		final double elapsedTime = stopwatch.elapsedTime();
@@ -92,7 +96,7 @@ public abstract class Job implements JobClockHandler {
 		if (this.trigger.isRepeatable()) {
 			this.statusCode = JobStatusCode.PENDING;
 		} else if ((statusCode == JobStatusCode.SUCCESS || statusCode == JobStatusCode.FAILURE)) {
-			JobClock.INSTANCE.unregisterJob(this);
+			JobClock.INSTANCE.unregister(this);
 		}
 	}
 

@@ -24,30 +24,23 @@ public enum JobClock {
 
 	private static final ZoneId DEFAULT_ZONE_ID = ZoneId.of("America/New_York");
 
-	private Set<JobClockHandler> jobs = new CopyOnWriteArraySet<>();
+	private Set<JobClockHandler> observers = new CopyOnWriteArraySet<>();
 
 	public void start() {
-		this.scheduler.scheduleAtFixedRate(new Runnable() {
-			public void run() {
-				final ZonedDateTime zonedNow = ZonedDateTime.now(DEFAULT_ZONE_ID);
-				final Date tick = Date.from(zonedNow.toInstant());
-
-				postTick(tick);
-			}
-		}, 0, 100, TimeUnit.MILLISECONDS);
+		this.startTimer();
 	}
 
-	public void registerJob(final Job job) {
-		this.jobs.add(job);
+	public void register(final JobClockHandler handler) {
+		this.observers.add(handler);
 	}
 
-	public boolean unregisterJob(final Job job) {
-		final boolean isRemoved = this.jobs.remove(job);
+	public boolean unregister(final JobClockHandler handler) {
+		final boolean isRemoved = this.observers.remove(handler);
 
 		if (isRemoved) {
-			LOGGER.info("Job " + job + " unregistered successfully");
+			LOGGER.info("Clock observer " + handler + " unregistered successfully");
 		} else {
-			LOGGER.info("Job " + job + " unregistered unsuccessful");
+			LOGGER.info("Clock observer " + handler + " unregistered unsuccessful");
 		}
 
 		return isRemoved;
@@ -56,18 +49,29 @@ public enum JobClock {
 	public void unregisterJobStream(final JobStream jobStream) {
 		final List<Job> jobs = jobStream.getJobs();
 
-		jobs.parallelStream().forEach(job -> JobClock.INSTANCE.unregisterJob(job));
+		jobs.parallelStream().forEach(job -> JobClock.INSTANCE.unregister(job));
 
-		this.unregisterJob(jobStream);
+		this.unregister(jobStream);
 	}
 
+	private void startTimer() {
+		this.scheduler.scheduleAtFixedRate(new Runnable() {
+			public void run() {
+				final ZonedDateTime zonedNow = ZonedDateTime.now(DEFAULT_ZONE_ID);
+				final Date tick = Date.from(zonedNow.toInstant());
+
+				postTick(tick);
+			}
+		}, 0, 1000, TimeUnit.MILLISECONDS);
+	}
+	
 	private void postTick(final Date tick) {
 		// Not sure if we want to shutdown when no jobs
 		// if(this.jobs.size() == 0) {
 		// this.scheduler.shutdown();
 		// }
 
-		this.jobs.parallelStream().forEach(job -> {
+		this.observers.parallelStream().forEach(job -> {
 			dispatchers.execute(new Runnable() {
 				@Override
 				public void run() {

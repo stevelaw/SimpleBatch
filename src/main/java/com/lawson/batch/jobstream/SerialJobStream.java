@@ -33,6 +33,6 @@ public class SerialJobStream extends JobStream {
 		
 		this.jobs.add(job);
 
-		JobClock.INSTANCE.registerJob(job);
+		JobClock.INSTANCE.register(job);
 	}
 }
