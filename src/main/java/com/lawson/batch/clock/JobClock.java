@@ -55,7 +55,7 @@ public enum JobClock {
 	public void unregisterJobStream(final JobStream jobStream) {
 		final List<Job> jobs = jobStream.getJobs();
 
-		jobs.parallelStream().forEach(job -> JobClock.INSTANCE.unregister(job));
+		jobs.parallelStream().forEach(job -> unregister(job));
 
 		this.unregister(jobStream);
 	}
