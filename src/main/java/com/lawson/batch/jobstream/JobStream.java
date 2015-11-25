@@ -37,7 +37,7 @@ public abstract class JobStream extends Job {
 			throw new JobException("No jobs added to jobstream");
 		}
 
-		setStatusCode(JobStatusCode.SUCCESS);
+		setStatus(JobStatusCode.SUCCESS, null);
 	}
 
 	public abstract void addJob(final Job job);
@@ -57,6 +57,6 @@ public abstract class JobStream extends Job {
 	}
 
 	public void resetAll() {
-		this.jobs.parallelStream().forEach(job -> job.setStatusCode(JobStatusCode.PENDING));
+		this.jobs.parallelStream().forEach(job -> job.setStatus(JobStatusCode.PENDING, null));
 	}
 }

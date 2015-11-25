@@ -2,7 +2,10 @@ package com.lawson.batch.job;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -21,6 +24,7 @@ public abstract class Job implements JobClockHandler {
 	private String name;
 	private JobStatusCode statusCode = JobStatusCode.PENDING;
 	private List<Job> dependencies;
+	private Object data;
 	private Trigger trigger;
 
 	Stopwatch stopwatch;
@@ -54,11 +58,19 @@ public abstract class Job implements JobClockHandler {
 	}
 
 	public List<Job> getDependencies() {
-		return dependencies;
+		return this.dependencies;
+	}
+	
+	public Optional<Job> getDependencyByName(final String jobName) {
+		return this.dependencies.stream().filter(job -> job.getName().equals(jobName)).findFirst();
 	}
 
 	public Trigger getTrigger() {
 		return trigger;
+	}
+
+	public Object getData() {
+		return data;
 	}
 
 	public void preProcess(final Date tick, final Object data) {
@@ -72,21 +84,22 @@ public abstract class Job implements JobClockHandler {
 	@Override
 	public void onTick(final Date tick) {
 		if (this.isAlive() && this.trigger.isSatisfiedBy(tick) && this.dependenciesSatisfied()) {
-			this.preProcess(tick, null);
+			final Map<String, Object> jobDataByName = this.getJobDependencyDataByJobName();
+
+			this.preProcess(tick, jobDataByName);
 
 			LOGGER.info("Job " + this + " started");
 
 			stopwatch = new Stopwatch();
 
-			// TODO: Get data from dependencies.
-			this.process(tick, null);
-
-			this.postProcess(tick, null);
+			this.process(tick, jobDataByName);
+			this.postProcess(tick, jobDataByName);
 		}
 	}
 
-	public void setStatusCode(JobStatusCode statusCode) {
+	public void setStatus(final JobStatusCode statusCode, final Object data) {
 		this.statusCode = statusCode;
+		this.data = data;
 
 		final double elapsedTime = stopwatch.elapsedTime();
 
@@ -138,6 +151,15 @@ public abstract class Job implements JobClockHandler {
 	 */
 	protected Boolean isRunning() {
 		return this.getStatusCode() == JobStatusCode.RUNNING;
+	}
+
+	private Map<String, Object> getJobDependencyDataByJobName() {
+		// Collect Map of data from dependencies to pass onto next job
+		final Map<String, Object> jobDataByName = new HashMap<>(this.dependencies.size());
+
+		this.dependencies.forEach(job -> jobDataByName.put(job.getName(), job.getData()));
+
+		return jobDataByName;
 	}
 
 	@Override

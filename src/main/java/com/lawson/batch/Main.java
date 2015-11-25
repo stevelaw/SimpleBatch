@@ -19,21 +19,21 @@ public class Main {
 		rootChild1.addJob(new Job("3") {
 			@Override
 			public void process(Date tick, Object data) {
-				setStatusCode(JobStatusCode.SUCCESS);
+				setStatus(JobStatusCode.SUCCESS, null);
 			}
 		});
 
 		rootChild1.addJob(new Job("4") {
 			@Override
 			public void process(Date tick, Object data) {
-				setStatusCode(JobStatusCode.SUCCESS);
+				setStatus(JobStatusCode.SUCCESS, null);
 			}
 		});
 
 		rootChild1.addJob(new Job("5") {
 			@Override
 			public void process(Date tick, Object data) {
-				setStatusCode(JobStatusCode.SUCCESS);
+				setStatus(JobStatusCode.SUCCESS, null);
 			}
 		});
 
@@ -42,21 +42,21 @@ public class Main {
 		rootChild2.addJob(new Job("7") {
 			@Override
 			public void process(Date tick, Object data) {
-				setStatusCode(JobStatusCode.SUCCESS);
+				setStatus(JobStatusCode.SUCCESS, null);
 			}
 		});
 
 		rootChild2.addJob(new Job("8") {
 			@Override
 			public void process(Date tick, Object data) {
-				setStatusCode(JobStatusCode.SUCCESS);
+				setStatus(JobStatusCode.SUCCESS, null);
 			}
 		});
 
 		rootChild2.addJob(new Job("9") {
 			@Override
 			public void process(Date tick, Object data) {
-				setStatusCode(JobStatusCode.SUCCESS);
+				setStatus(JobStatusCode.SUCCESS, null);
 			}
 		});
 
