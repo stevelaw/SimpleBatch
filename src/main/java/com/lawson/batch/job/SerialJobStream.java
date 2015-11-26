@@ -6,11 +6,11 @@ import com.lawson.batch.trigger.Trigger;
 
 public class SerialJobStream extends JobStream {
 	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());
-	
+
 	public SerialJobStream(String name) {
 		super(name);
 	}
-	
+
 	public SerialJobStream(String name, Trigger trigger) {
 		super(name, trigger);
 	}
@@ -20,15 +20,15 @@ public class SerialJobStream extends JobStream {
 			throw new IllegalArgumentException("Job is null");
 		}
 
-		if (this.getJobs().size() == 0) {
+		if (this.numberOfJobs() == 0) {
 			job.setDependency(this);
 		} else {
-			final Job prevJob = this.getJobs().get(this.getJobs().size() -1);
+			final Job prevJob = this.getJobs().get(this.numberOfJobs() - 1);
 			job.setDependency(prevJob);
 		}
-		
+
 		LOGGER.info("Ading job " + job + " with dependencies " + job.getDependencies());
-		
+
 		this.addJobInternal(job);
 	}
 }

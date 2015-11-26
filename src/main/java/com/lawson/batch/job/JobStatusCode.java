@@ -1,5 +1,5 @@
 package com.lawson.batch.job;
 
-enum JobStatusCode {
+public enum JobStatusCode {
 	PENDING, RUNNING, FAILURE, SUCCESS
 }

@@ -1,6 +1,7 @@
 package com.lawson.batch.job;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,7 @@ import com.lawson.batch.trigger.Trigger;
 import com.lawson.batch.util.Stopwatch;
 
 public abstract class Job implements JobClockHandler {
-	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());
+	private final static Logger LOGGER = Logger.getLogger(Job.class.getName());
 
 	private UUID id;
 	private String name;
@@ -47,33 +48,13 @@ public abstract class Job implements JobClockHandler {
 		}
 	}
 
-	public void setDependencies(final List<Job> dependencies) {
-		this.dependencies = dependencies;
-	}
-
-	public void setDependency(final Job dependency) {
+	void setDependency(final Job dependency) {
 		this.dependencies = new ArrayList<>();
 		this.dependencies.add(dependency);
 	}
 
-	public List<Job> getDependencies() {
-		return this.dependencies;
-	}
-
-	public Optional<Job> getDependencyByName(final String jobName) {
-		return this.dependencies.stream().filter(job -> job.getName().equals(jobName)).findFirst();
-	}
-
 	public Trigger getTrigger() {
 		return trigger;
-	}
-
-	public void setJobClock(JobClock jobClock) {
-		this.jobClock = jobClock;
-	}
-
-	public JobClock getJobClock() {
-		return jobClock;
 	}
 
 	public Object getData() {
@@ -88,6 +69,9 @@ public abstract class Job implements JobClockHandler {
 	public void postProcess(final Date tick, final Object data) {
 	}
 
+	/**
+	 * Should not be called directly, and should only be called by clock.
+	 */
 	@Override
 	public synchronized void onTick(final Date tick) {
 		// The job is available to run (pending), the trigger condition is met,
@@ -114,15 +98,27 @@ public abstract class Job implements JobClockHandler {
 		}
 	}
 
+	public JobStatusCode getStatusCode() {
+		return statusCode;
+	}
+
+	public UUID getId() {
+		return id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
 	public void setJobSuccessful(final Object data) {
 		this.setStatusAndData(JobStatusCode.SUCCESS, data);
 	}
-	
+
 	public void setJobFailure(final Object data) {
 		this.setStatusAndData(JobStatusCode.FAILURE, data);
 	}
-	
-	protected void setStatusAndData(final JobStatusCode statusCode, final Object data) {
+
+	void setStatusAndData(final JobStatusCode statusCode, final Object data) {
 		this.statusCode = statusCode;
 		this.data = data;
 
@@ -138,16 +134,35 @@ public abstract class Job implements JobClockHandler {
 		}
 	}
 
-	public JobStatusCode getStatusCode() {
-		return statusCode;
+	void setJobClock(JobClock jobClock) {
+		this.jobClock = jobClock;
+	}
+	
+	/**
+	 * Returns unmodifiable list of dependencies.
+	 * 
+	 * @return unmodifiable list of dependencies
+	 */
+	protected List<Job> getDependencies() {
+		return Collections.unmodifiableList(this.dependencies);
 	}
 
-	public UUID getId() {
-		return id;
+	protected Optional<Job> getDependencyByName(final String jobName) {
+		return this.dependencies.stream().filter(job -> job.getName().equals(jobName)).findFirst();
 	}
+	
+	/**
+	 * Returns unmodifiable map of jobs to data.
+	 * 
+	 * @return unmodifiable map of jobs to data
+	 */
+	protected Map<String, Object> getJobDependencyDataByJobName() {
+		// Collect Map of data from dependencies to pass onto next job
+		final Map<String, Object> jobDataByName = new HashMap<>(this.dependencies.size());
 
-	public String getName() {
-		return name;
+		this.dependencies.forEach(job -> jobDataByName.put(job.getName(), job.getData()));
+
+		return Collections.unmodifiableMap(jobDataByName);
 	}
 
 	/**
@@ -155,7 +170,7 @@ public abstract class Job implements JobClockHandler {
 	 * 
 	 * @return True if available to run (pending).
 	 */
-	protected boolean isAvailableToRun() {
+	private boolean isAvailableToRun() {
 		return this.getStatusCode() == JobStatusCode.PENDING;
 	}
 
@@ -164,27 +179,9 @@ public abstract class Job implements JobClockHandler {
 	 * 
 	 * @return True if all dependencies are successful.
 	 */
-	protected Boolean dependenciesSatisfied() {
+	private Boolean dependenciesSatisfied() {
 		return this.dependencies == null
 				|| this.dependencies.parallelStream().allMatch(job -> job.statusCode.equals(JobStatusCode.SUCCESS));
-	}
-
-	/**
-	 * Returns true if the job is running.
-	 * 
-	 * @return True if the job is running, false otherwise.
-	 */
-	protected Boolean isRunning() {
-		return this.getStatusCode() == JobStatusCode.RUNNING;
-	}
-
-	private Map<String, Object> getJobDependencyDataByJobName() {
-		// Collect Map of data from dependencies to pass onto next job
-		final Map<String, Object> jobDataByName = new HashMap<>(this.dependencies.size());
-
-		this.dependencies.forEach(job -> jobDataByName.put(job.getName(), job.getData()));
-
-		return jobDataByName;
 	}
 
 	@Override

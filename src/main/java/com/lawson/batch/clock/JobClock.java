@@ -10,8 +10,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.lawson.batch.JobStreamRunnerConfig;
 import com.lawson.batch.job.JobStream;
+import com.lawson.batch.job.JobStreamRunnerConfig;
 
 public class JobClock {
 	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());

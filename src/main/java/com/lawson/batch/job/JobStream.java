@@ -40,7 +40,7 @@ public abstract class JobStream extends Job {
 	 * @param job
 	 *            Job to add
 	 */
-	protected void addJobInternal(final Job job) {
+	void addJobInternal(final Job job) {
 		this.jobs.add(job);
 	}
 
@@ -49,8 +49,12 @@ public abstract class JobStream extends Job {
 	 * 
 	 * @return unmodifiable list of jobs
 	 */
-	protected List<Job> getJobs() {
+	List<Job> getJobs() {
 		return Collections.unmodifiableList(this.jobs);
+	}
+	
+	Integer numberOfJobs() {
+		return this.jobs.size();
 	}
 
 	/**
@@ -58,7 +62,7 @@ public abstract class JobStream extends Job {
 	 * 
 	 * @return True if all non-repeatable triggered jobs are successful.
 	 */
-	public Boolean isAllSuccessful() {
+	Boolean isAllSuccessful() {
 		return this.jobs.parallelStream().filter(job -> !job.getTrigger().isRepeatable())
 				.allMatch(job -> job.getStatusCode().equals(JobStatusCode.SUCCESS));
 	}
@@ -67,7 +71,7 @@ public abstract class JobStream extends Job {
 	 * Reset the job state of all jobs back to the
 	 * <code>JobStatusCode.PENDING</code> state, and reset the data.
 	 */
-	public void resetAll() {
+	void resetAll() {
 		this.jobs.parallelStream().forEach(job -> job.setStatusAndData(JobStatusCode.PENDING, null));
 	}
 
@@ -75,7 +79,7 @@ public abstract class JobStream extends Job {
 	 * To be provided by an ancestor. It is our responsibility to set upon any
 	 * descendants.
 	 */
-	public void setJobClock(JobClock jobClock) {
+	void setJobClock(JobClock jobClock) {
 		this.getJobs().stream().forEach(job -> {
 			job.setJobClock(jobClock);
 			jobClock.register(job);

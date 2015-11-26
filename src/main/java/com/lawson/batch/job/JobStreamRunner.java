@@ -1,4 +1,4 @@
-package com.lawson.batch;
+package com.lawson.batch.job;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.clock.JobClockHandler;
 import com.lawson.batch.exception.JobException;
-import com.lawson.batch.job.JobStream;
 import com.lawson.batch.util.CronExpression;
 
 public class JobStreamRunner implements JobClockHandler {

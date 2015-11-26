@@ -1,4 +1,4 @@
-package com.lawson.batch;
+package com.lawson.batch.job;
 
 import java.time.ZoneId;
 import java.util.List;
