@@ -16,7 +16,7 @@ public class JobStreamRunner implements JobClockHandler {
 	final private JobClock jobClock;
 	final private JobStream jobStream;
 	final private JobStreamRunnerConfig config;
-	private CronExpression midnightCronExpression;
+	final private CronExpression midnightCronExpression;
 
 	public JobStreamRunner(final JobStream jobStream) {
 		this(jobStream, new JobStreamRunnerConfig.Builder().build());
@@ -27,7 +27,7 @@ public class JobStreamRunner implements JobClockHandler {
 		this.jobStream = jobStream;
 
 		this.setupLogger(config.getLogLevel());
-		this.setupMidnightCronExpression();
+		this.midnightCronExpression = this.getMidnightCronExpression();
 
 		// Create job clock
 		this.jobClock = new JobClock(config);
@@ -48,9 +48,9 @@ public class JobStreamRunner implements JobClockHandler {
 		this.jobClock.start();
 	}
 
-	private void setupMidnightCronExpression() {
+	private CronExpression getMidnightCronExpression() {
 		try {
-			this.midnightCronExpression = new CronExpression("0 0 0 * * ?");
+			return new CronExpression("0 0 0 * * ?");
 		} catch (ParseException e) {
 			throw new JobException("Error creating cron expression", e);
 		}
