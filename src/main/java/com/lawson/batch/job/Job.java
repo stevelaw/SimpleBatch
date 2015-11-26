@@ -19,27 +19,24 @@ import com.lawson.batch.util.Stopwatch;
 public abstract class Job implements JobClockHandler {
 	private final static Logger LOGGER = Logger.getLogger(Job.class.getName());
 
-	private UUID id;
-	private String name;
+	final private UUID id;
+	final private String name;
+	final private List<Job> dependencies = new ArrayList<>();
+	final private Trigger trigger;
 	private volatile JobStatusCode statusCode = JobStatusCode.PENDING;
-	private List<Job> dependencies;
 	private Object data;
-	private Trigger trigger;
 	private JobClock jobClock;
-
 	Stopwatch stopwatch;
 
 	public Job(final String name) {
 		this.id = UUID.randomUUID();
 		this.name = name;
-		this.dependencies = new ArrayList<>();
 		this.trigger = new DefaultTrigger();
 	}
 
 	public Job(final String name, final Trigger trigger) {
 		this.id = UUID.randomUUID();
 		this.name = name;
-		this.dependencies = new ArrayList<>();
 
 		if (trigger == null) {
 			this.trigger = new DefaultTrigger();
@@ -48,9 +45,12 @@ public abstract class Job implements JobClockHandler {
 		}
 	}
 
-	void setDependency(final Job dependency) {
-		this.dependencies = new ArrayList<>();
+	void addDependency(final Job dependency) {
 		this.dependencies.add(dependency);
+	}
+	
+	void addDependencies(final List<Job> dependencies) {
+		this.dependencies.addAll(dependencies);
 	}
 
 	public Trigger getTrigger() {

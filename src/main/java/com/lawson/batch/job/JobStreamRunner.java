@@ -14,10 +14,8 @@ public class JobStreamRunner implements JobClockHandler {
 	private final static Logger LOGGER = Logger.getLogger(JobStreamRunner.class.getName());
 
 	final private JobClock jobClock;
-
 	final private JobStream jobStream;
-	final JobStreamRunnerConfig config;
-
+	final private JobStreamRunnerConfig config;
 	private CronExpression midnightCronExpression;
 
 	public JobStreamRunner(final JobStream jobStream) {

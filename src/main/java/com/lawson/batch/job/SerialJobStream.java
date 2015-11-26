@@ -21,10 +21,10 @@ public class SerialJobStream extends JobStream {
 		}
 
 		if (this.numberOfJobs() == 0) {
-			job.setDependency(this);
+			job.addDependency(this);
 		} else {
 			final Job prevJob = this.getJobs().get(this.numberOfJobs() - 1);
-			job.setDependency(prevJob);
+			job.addDependency(prevJob);
 		}
 
 		LOGGER.info("Ading job " + job + " with dependencies " + job.getDependencies());
