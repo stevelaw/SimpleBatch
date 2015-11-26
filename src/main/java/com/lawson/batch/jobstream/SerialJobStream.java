@@ -2,7 +2,6 @@ package com.lawson.batch.jobstream;
 
 import java.util.logging.Logger;
 
-import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.job.Job;
 import com.lawson.batch.trigger.Trigger;
 
@@ -22,17 +21,15 @@ public class SerialJobStream extends JobStream {
 			throw new IllegalArgumentException("Job is null");
 		}
 
-		if (this.jobs.size() == 0) {
+		if (this.getJobs().size() == 0) {
 			job.setDependency(this);
 		} else {
-			final Job prevJob = this.jobs.get(this.jobs.size() -1);
+			final Job prevJob = this.getJobs().get(this.getJobs().size() -1);
 			job.setDependency(prevJob);
 		}
 		
 		LOGGER.info("Ading job " + job + " with dependencies " + job.getDependencies());
 		
-		this.jobs.add(job);
-
-		JobClock.INSTANCE.register(job);
+		this.addJobInternal(job);
 	}
 }

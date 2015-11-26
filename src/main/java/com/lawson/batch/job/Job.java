@@ -22,10 +22,11 @@ public abstract class Job implements JobClockHandler {
 
 	private UUID id;
 	private String name;
-	private JobStatusCode statusCode = JobStatusCode.PENDING;
+	private volatile JobStatusCode statusCode = JobStatusCode.PENDING;
 	private List<Job> dependencies;
 	private Object data;
 	private Trigger trigger;
+	private JobClock jobClock;
 
 	Stopwatch stopwatch;
 
@@ -60,13 +61,21 @@ public abstract class Job implements JobClockHandler {
 	public List<Job> getDependencies() {
 		return this.dependencies;
 	}
-	
+
 	public Optional<Job> getDependencyByName(final String jobName) {
 		return this.dependencies.stream().filter(job -> job.getName().equals(jobName)).findFirst();
 	}
 
 	public Trigger getTrigger() {
 		return trigger;
+	}
+
+	public void setJobClock(JobClock jobClock) {
+		this.jobClock = jobClock;
+	}
+
+	public JobClock getJobClock() {
+		return jobClock;
 	}
 
 	public Object getData() {
@@ -82,22 +91,32 @@ public abstract class Job implements JobClockHandler {
 	}
 
 	@Override
-	public void onTick(final Date tick) {
-		if (this.isAlive() && this.trigger.isSatisfiedBy(tick) && this.dependenciesSatisfied()) {
+	public synchronized void onTick(final Date tick) {
+		// The job is available to run (pending), the trigger condition is met,
+		// and all dependencies are satisfied.
+		if (this.isAvailableToRun() && this.trigger.isSatisfiedBy(tick) && this.dependenciesSatisfied()) {
+			// We're running, so update status code
+			this.statusCode = JobStatusCode.RUNNING;
+
+			// Get dependency data to pass onto new job
 			final Map<String, Object> jobDataByName = this.getJobDependencyDataByJobName();
 
+			// Allow jobs to perform custom logic prior running.
 			this.preProcess(tick, jobDataByName);
 
 			LOGGER.info("Job " + this + " started");
 
 			stopwatch = new Stopwatch();
 
+			// Process the job logic
 			this.process(tick, jobDataByName);
+
+			// Allow jobs to perform custom logic after running.
 			this.postProcess(tick, jobDataByName);
 		}
 	}
 
-	public void setStatus(final JobStatusCode statusCode, final Object data) {
+	public void setStatusAndData(final JobStatusCode statusCode, final Object data) {
 		this.statusCode = statusCode;
 		this.data = data;
 
@@ -109,7 +128,7 @@ public abstract class Job implements JobClockHandler {
 		if (this.trigger.isRepeatable()) {
 			this.statusCode = JobStatusCode.PENDING;
 		} else if ((statusCode == JobStatusCode.SUCCESS || statusCode == JobStatusCode.FAILURE)) {
-			JobClock.INSTANCE.unregister(this);
+			this.jobClock.unregister(this);
 		}
 	}
 
@@ -126,12 +145,12 @@ public abstract class Job implements JobClockHandler {
 	}
 
 	/**
-	 * Returns true if available to run (pending or running).
+	 * Returns true if available to run (pending).
 	 * 
-	 * @return True if available to run (pending or running).
+	 * @return True if available to run (pending).
 	 */
-	protected boolean isAlive() {
-		return this.getStatusCode() == JobStatusCode.PENDING || this.getStatusCode() == JobStatusCode.RUNNING;
+	protected boolean isAvailableToRun() {
+		return this.getStatusCode() == JobStatusCode.PENDING;
 	}
 
 	/**

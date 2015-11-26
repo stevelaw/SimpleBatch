@@ -3,7 +3,6 @@ package com.lawson.batch.clock;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executors;
@@ -12,13 +11,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.lawson.batch.JobStreamRunnerConfig;
-import com.lawson.batch.job.Job;
 import com.lawson.batch.jobstream.JobStream;
 
-public enum JobClock {
-	INSTANCE;
-	
-	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName()); 
+public class JobClock {
+	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());
+
+	final JobStreamRunnerConfig config;
 
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private ScheduledExecutorService dispatchers;
@@ -27,11 +25,13 @@ public enum JobClock {
 
 	private Set<JobClockHandler> observers = new CopyOnWriteArraySet<>();
 
-	public void configure(final JobStreamRunnerConfig config) {
+	public JobClock(final JobStreamRunnerConfig config) {
+		this.config = config;
+
 		this.zoneId = config.getTimezoneZoneId();
 		this.dispatchers = Executors.newScheduledThreadPool(config.getNumberDispatcherThreads());
 	}
-	
+
 	public void start() {
 		this.startTimer();
 	}
@@ -52,14 +52,6 @@ public enum JobClock {
 		return isRemoved;
 	}
 
-	public void unregisterJobStream(final JobStream jobStream) {
-		final List<Job> jobs = jobStream.getJobs();
-
-		jobs.parallelStream().forEach(job -> unregister(job));
-
-		this.unregister(jobStream);
-	}
-
 	private void startTimer() {
 		this.scheduler.scheduleAtFixedRate(new Runnable() {
 			public void run() {
@@ -68,9 +60,9 @@ public enum JobClock {
 
 				postTick(tick);
 			}
-		}, 0, 1000, TimeUnit.MILLISECONDS);
+		}, 0, this.config.getTimerTickIntervalMS(), TimeUnit.MILLISECONDS);
 	}
-	
+
 	private void postTick(final Date tick) {
 		this.observers.parallelStream().forEach(job -> {
 			dispatchers.execute(new Runnable() {

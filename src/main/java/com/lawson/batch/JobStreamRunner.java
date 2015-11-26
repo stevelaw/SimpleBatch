@@ -14,6 +14,8 @@ import com.lawson.batch.util.CronExpression;
 public class JobStreamRunner implements JobClockHandler {
 	private final static Logger LOGGER = Logger.getLogger(JobStreamRunner.class.getName());
 
+	final private JobClock jobClock;
+
 	final private JobStream jobStream;
 	final JobStreamRunnerConfig config;
 
@@ -30,9 +32,8 @@ public class JobStreamRunner implements JobClockHandler {
 		this.setupLogger(config.getLogLevel());
 		this.setupMidnightCronExpression();
 
-		JobClock.INSTANCE.configure(config);
-		JobClock.INSTANCE.register(this);
-		JobClock.INSTANCE.register(jobStream);
+		// Create job clock
+		this.jobClock = new JobClock(config);
 	}
 
 	public JobStream getJobStream() {
@@ -40,7 +41,14 @@ public class JobStreamRunner implements JobClockHandler {
 	}
 
 	public void start() {
-		JobClock.INSTANCE.start();
+		// Set job clock of root job stream
+		this.jobStream.setJobClock(jobClock);
+
+		// Register this class and root job stream to clock
+		this.jobClock.register(this);
+		this.jobClock.register(jobStream);
+
+		this.jobClock.start();
 	}
 
 	private void setupMidnightCronExpression() {
@@ -66,7 +74,7 @@ public class JobStreamRunner implements JobClockHandler {
 	}
 
 	@Override
-	public void onTick(final Date tick) {
+	public synchronized void onTick(final Date tick) {
 		if (this.midnightCronExpression.isSatisfiedBy(tick)) {
 			LOGGER.info("Midnight detected. Attempting to reset jobs.");
 

@@ -2,7 +2,6 @@ package com.lawson.batch.jobstream;
 
 import java.util.logging.Logger;
 
-import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.job.Job;
 
 public class ParallelJobStream extends JobStream {
@@ -19,8 +18,6 @@ public class ParallelJobStream extends JobStream {
 
 		LOGGER.info("Ading job " + job);
 		
-		this.jobs.add(job);
-
-		JobClock.INSTANCE.register(job);
+		this.addJobInternal(job);
 	}
 }
