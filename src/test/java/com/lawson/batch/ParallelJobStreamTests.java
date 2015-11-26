@@ -3,7 +3,8 @@ package com.lawson.batch;
 import static com.jayway.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,25 +17,25 @@ import com.lawson.batch.job.Job;
 import com.lawson.batch.job.JobStream;
 import com.lawson.batch.job.JobStreamRunner;
 import com.lawson.batch.job.JobStreamRunnerConfig;
-import com.lawson.batch.job.SerialJobStream;
+import com.lawson.batch.job.ParallelJobStream;
 
-public class SerialJobStreamTests {
+public class ParallelJobStreamTests {
 	private static final Integer NUMBER_OF_JOBS = 100;
-	
+
 	@Test
-	public void doJobsRunSerially() {
+	public void doJobsRunInParallel() {
 		final JobStreamRunnerConfig config = new JobStreamRunnerConfig.Builder().timerTickIntervalMS(1).build();
 
-		final JobStream jobStream = new SerialJobStream("Job Stream");
+		final JobStream jobStream = new ParallelJobStream("Job Stream");
 
 		final List<String> completionOrder = new ArrayList<>();
-		final List<String> expectedOrder = new ArrayList<>();
+		final List<String> addOrder = new ArrayList<>();
 		IntStream.range(0, NUMBER_OF_JOBS).forEach(num -> {
 			final String jobName = "Job " + num;
 
 			// We're going to compare the actual job execution order with the
 			// expected order list.
-			expectedOrder.add(jobName);
+			addOrder.add(jobName);
 
 			jobStream.addJob(new Job(jobName) {
 				@Override
@@ -50,7 +51,10 @@ public class SerialJobStreamTests {
 
 		await().atMost(5, SECONDS).until(completionOrder::size, is(NUMBER_OF_JOBS));
 
-		assertTrue(completionOrder.equals(expectedOrder));
+		assertEquals(NUMBER_OF_JOBS.intValue(), completionOrder.size());
+		
+		// Can technically pass, but unlikely.
+		assertTrue(!completionOrder.equals(addOrder));
 	}
 
 }
