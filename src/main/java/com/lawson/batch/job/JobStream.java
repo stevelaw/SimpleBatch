@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.exception.JobException;
 import com.lawson.batch.trigger.Trigger;
 
 public abstract class JobStream extends Job {
-	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());
-
 	private List<Job> jobs = new ArrayList<Job>();
 
 	public JobStream(final String name) {
