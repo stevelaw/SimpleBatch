@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.lawson.batch.JobStreamRunnerConfig;
-import com.lawson.batch.jobstream.JobStream;
+import com.lawson.batch.job.JobStream;
 
 public class JobClock {
 	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());

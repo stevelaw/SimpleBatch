@@ -1,8 +1,6 @@
-package com.lawson.batch.jobstream;
+package com.lawson.batch.job;
 
 import java.util.logging.Logger;
-
-import com.lawson.batch.job.Job;
 
 public class ParallelJobStream extends JobStream {
 	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());

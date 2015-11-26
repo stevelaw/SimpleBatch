@@ -1,8 +1,7 @@
-package com.lawson.batch.jobstream;
+package com.lawson.batch.job;
 
 import java.util.logging.Logger;
 
-import com.lawson.batch.job.Job;
 import com.lawson.batch.trigger.Trigger;
 
 public class SerialJobStream extends JobStream {

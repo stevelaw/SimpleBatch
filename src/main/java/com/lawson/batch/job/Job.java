@@ -11,10 +11,8 @@ import java.util.logging.Logger;
 
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.clock.JobClockHandler;
-import com.lawson.batch.jobstream.JobStream;
 import com.lawson.batch.trigger.DefaultTrigger;
 import com.lawson.batch.trigger.Trigger;
-import com.lawson.batch.util.JobStatusCode;
 import com.lawson.batch.util.Stopwatch;
 
 public abstract class Job implements JobClockHandler {
@@ -116,7 +114,15 @@ public abstract class Job implements JobClockHandler {
 		}
 	}
 
-	public void setStatusAndData(final JobStatusCode statusCode, final Object data) {
+	public void setJobSuccessful(final Object data) {
+		this.setStatusAndData(JobStatusCode.SUCCESS, data);
+	}
+	
+	public void setJobFailure(final Object data) {
+		this.setStatusAndData(JobStatusCode.FAILURE, data);
+	}
+	
+	protected void setStatusAndData(final JobStatusCode statusCode, final Object data) {
 		this.statusCode = statusCode;
 		this.data = data;
 

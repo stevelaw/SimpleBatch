@@ -1,4 +1,4 @@
-package com.lawson.batch.jobstream;
+package com.lawson.batch.job;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,9 +8,7 @@ import java.util.logging.Logger;
 
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.exception.JobException;
-import com.lawson.batch.job.Job;
 import com.lawson.batch.trigger.Trigger;
-import com.lawson.batch.util.JobStatusCode;
 
 public abstract class JobStream extends Job {
 	private final static Logger LOGGER = Logger.getLogger(JobStream.class.getName());
