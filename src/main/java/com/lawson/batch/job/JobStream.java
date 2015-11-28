@@ -25,8 +25,8 @@ public abstract class JobStream extends Job {
 		if (this.jobs.size() == 0) {
 			throw new JobException("No jobs added to jobstream");
 		}
-
-		setStatusAndData(JobStatusCode.SUCCESS, null);
+		
+		this.setStatusAndData(JobStatusCode.RUNNING, null);
 	}
 
 	public abstract void addJob(final Job job);
@@ -49,9 +49,31 @@ public abstract class JobStream extends Job {
 	List<Job> getJobs() {
 		return Collections.unmodifiableList(this.jobs);
 	}
-	
+
 	Integer numberOfJobs() {
 		return this.jobs.size();
+	}
+
+	@Override
+	public synchronized void onTick(Date tick) {
+		// Check for status code changes based on descendant statuses. If any
+		// descendants failed, the status is set to failed. If all are
+		// successful, the status is set to success.
+		if (this.isAnyFailed()) {
+			this.setStatusAndData(JobStatusCode.FAILURE, null);
+		} else if (this.isAllSuccessful()) {
+			this.setStatusAndData(JobStatusCode.SUCCESS, null);
+		}
+	}
+
+	/**
+	 * Returns true if all non-repeatable triggered jobs are running.
+	 * 
+	 * @return True if all non-repeatable triggered jobs are running.
+	 */
+	Boolean isAnyRunningSuccessful() {
+		return this.jobs.parallelStream().filter(job -> !job.getTrigger().isRepeatable())
+				.allMatch(job -> job.getStatusCode().equals(JobStatusCode.RUNNING));
 	}
 
 	/**
@@ -65,10 +87,21 @@ public abstract class JobStream extends Job {
 	}
 
 	/**
+	 * Returns true if any non-repeatable triggered jobs failed.
+	 * 
+	 * @return True if any non-repeatable triggered jobs failed.
+	 */
+	Boolean isAnyFailed() {
+		return this.jobs.parallelStream().filter(job -> !job.getTrigger().isRepeatable())
+				.anyMatch(job -> job.getStatusCode().equals(JobStatusCode.FAILURE));
+	}
+
+	/**
 	 * Reset the job state of all jobs back to the
 	 * <code>JobStatusCode.PENDING</code> state, and reset the data.
 	 */
 	void resetAll() {
+		this.setStatusAndData(JobStatusCode.PENDING, null);
 		this.jobs.parallelStream().forEach(job -> job.setStatusAndData(JobStatusCode.PENDING, null));
 	}
 

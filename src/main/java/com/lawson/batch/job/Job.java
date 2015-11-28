@@ -21,7 +21,7 @@ public abstract class Job implements JobClockHandler {
 
 	final private UUID id;
 	final private String name;
-	final private List<Job> dependencies = new ArrayList<>();
+	final private List<JobDependency> dependencies = new ArrayList<>();
 	final private Trigger trigger;
 	private volatile JobStatusCode statusCode = JobStatusCode.PENDING;
 	private Object data;
@@ -45,11 +45,11 @@ public abstract class Job implements JobClockHandler {
 		}
 	}
 
-	void addDependency(final Job dependency) {
-		this.dependencies.add(dependency);
+	public void addDependency(final JobDependency jobDependency) {
+		this.dependencies.add(jobDependency);
 	}
-	
-	void addDependencies(final List<Job> dependencies) {
+
+	public void addDependencies(final List<JobDependency> dependencies) {
 		this.dependencies.addAll(dependencies);
 	}
 
@@ -119,6 +119,10 @@ public abstract class Job implements JobClockHandler {
 	}
 
 	void setStatusAndData(final JobStatusCode statusCode, final Object data) {
+		if (this.statusCode == statusCode) {
+			return;
+		}
+
 		this.statusCode = statusCode;
 		this.data = data;
 
@@ -137,20 +141,21 @@ public abstract class Job implements JobClockHandler {
 	void setJobClock(JobClock jobClock) {
 		this.jobClock = jobClock;
 	}
-	
+
 	/**
 	 * Returns unmodifiable list of dependencies.
 	 * 
 	 * @return unmodifiable list of dependencies
 	 */
-	protected List<Job> getDependencies() {
+	protected List<JobDependency> getDependencies() {
 		return Collections.unmodifiableList(this.dependencies);
 	}
 
-	protected Optional<Job> getDependencyByName(final String jobName) {
-		return this.dependencies.stream().filter(job -> job.getName().equals(jobName)).findFirst();
+	protected Optional<JobDependency> getDependencyByName(final String jobName) {
+		return this.dependencies.stream().filter(dependency -> dependency.getJob().getName().equals(jobName))
+				.findFirst();
 	}
-	
+
 	/**
 	 * Returns unmodifiable map of jobs to data.
 	 * 
@@ -160,7 +165,8 @@ public abstract class Job implements JobClockHandler {
 		// Collect Map of data from dependencies to pass onto next job
 		final Map<String, Object> jobDataByName = new HashMap<>(this.dependencies.size());
 
-		this.dependencies.forEach(job -> jobDataByName.put(job.getName(), job.getData()));
+		this.dependencies
+				.forEach(dependency -> jobDataByName.put(dependency.getJob().getName(), dependency.getJob().getData()));
 
 		return Collections.unmodifiableMap(jobDataByName);
 	}
@@ -180,8 +186,8 @@ public abstract class Job implements JobClockHandler {
 	 * @return True if all dependencies are successful.
 	 */
 	private Boolean dependenciesSatisfied() {
-		return this.dependencies == null
-				|| this.dependencies.parallelStream().allMatch(job -> job.statusCode.equals(JobStatusCode.SUCCESS));
+		return this.dependencies == null || this.dependencies.parallelStream()
+				.allMatch(dependency -> dependency.getJob().getStatusCode().equals(dependency.getJobStatusCode()));
 	}
 
 	@Override
