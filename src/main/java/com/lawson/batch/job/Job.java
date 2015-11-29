@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.clock.JobClockHandler;
+import com.lawson.batch.job.snapshot.JobSnapshotVisitor;
 import com.lawson.batch.trigger.DefaultTrigger;
 import com.lawson.batch.trigger.Trigger;
 import com.lawson.batch.util.Stopwatch;
@@ -188,6 +189,17 @@ public abstract class Job implements JobClockHandler {
 	private Boolean dependenciesSatisfied() {
 		return this.dependencies == null || this.dependencies.parallelStream()
 				.allMatch(dependency -> dependency.getJob().getStatusCode().equals(dependency.getJobStatusCode()));
+	}
+
+	/**
+	 * Provides ability to pass in visitor to allow job and job stream to create
+	 * a snapshot distinctly.
+	 * 
+	 * @param visitor
+	 *            Visitor interface.
+	 */
+	public Object snapshot(final JobSnapshotVisitor visitor) {
+		return visitor.snapshot(this);
 	}
 
 	@Override

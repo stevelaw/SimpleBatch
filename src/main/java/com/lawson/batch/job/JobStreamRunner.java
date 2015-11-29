@@ -17,6 +17,7 @@ public class JobStreamRunner implements JobClockHandler {
 	final private JobStream jobStream;
 	final private JobStreamRunnerConfig config;
 	final private CronExpression midnightCronExpression;
+	private Boolean isWaitingForCompletion = false;
 
 	public JobStreamRunner(final JobStream jobStream) {
 		this(jobStream, new JobStreamRunnerConfig.Builder().build());
@@ -72,11 +73,19 @@ public class JobStreamRunner implements JobClockHandler {
 
 	@Override
 	public synchronized void onTick(final Date tick) {
-		if (this.midnightCronExpression.isSatisfiedBy(tick)) {
+		if (this.midnightCronExpression.isSatisfiedBy(tick) || this.isWaitingForCompletion) {
 			LOGGER.info("Midnight detected. Attempting to reset jobs.");
 
 			if (this.jobStream.isAllSuccessful()) {
 				this.jobStream.resetAll();
+				this.isWaitingForCompletion = false;
+			} else {
+				// Only warn once
+				if (!this.isWaitingForCompletion) {
+					LOGGER.warning("Midnight detected and not all jobs have been completed.");
+				}
+				
+				this.isWaitingForCompletion = true;
 			}
 		}
 	}

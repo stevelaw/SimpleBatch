@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.lawson.batch.clock.JobClock;
 import com.lawson.batch.exception.JobException;
+import com.lawson.batch.job.snapshot.JobSnapshotVisitor;
 import com.lawson.batch.trigger.Trigger;
 
 public abstract class JobStream extends Job {
@@ -25,7 +26,7 @@ public abstract class JobStream extends Job {
 		if (this.jobs.size() == 0) {
 			throw new JobException("No jobs added to jobstream");
 		}
-		
+
 		this.setStatusAndData(JobStatusCode.RUNNING, null);
 	}
 
@@ -46,7 +47,7 @@ public abstract class JobStream extends Job {
 	 * 
 	 * @return unmodifiable list of jobs
 	 */
-	List<Job> getJobs() {
+	public List<Job> getJobs() {
 		return Collections.unmodifiableList(this.jobs);
 	}
 
@@ -114,5 +115,16 @@ public abstract class JobStream extends Job {
 			job.setJobClock(jobClock);
 			jobClock.register(job);
 		});
+	}
+
+	/**
+	 * Provides ability to pass in visitor to allow job and job stream to create
+	 * a snapshot distinctly.
+	 * 
+	 * @param visitor
+	 *            Visitor interface.
+	 */
+	public Object snapshot(final JobSnapshotVisitor visitor) {
+		return visitor.snapshot(this);
 	}
 }

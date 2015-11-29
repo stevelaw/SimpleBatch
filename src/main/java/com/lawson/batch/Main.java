@@ -10,9 +10,10 @@ import com.lawson.batch.job.SerialJobStream;
 public class Main {
 
 	public static void main(String[] args) {
-//		final JobStream rootJobStream = new SerialJobStream("1", new CronTrigger("0 07 12 * * ?"));
+		// final JobStream rootJobStream = new SerialJobStream("1", new
+		// CronTrigger("0 07 12 * * ?"));
 		final JobStream rootJobStream = new SerialJobStream("1");
-//		final JobStream rootJobStream = new ParallelJobStream("1");
+		// final JobStream rootJobStream = new ParallelJobStream("1");
 
 		final JobStream rootChild1 = new SerialJobStream("2");
 
